@@ -80,6 +80,7 @@ namespace DiscordBot.Data
         {
             var guild = new Guild
             {
+                DateAdded = DateTimeOffset.Now,
                 DateCreated = guildParam.CreatedAt,
                 GuildDiscordId = guildParam.Id,
                 GuildName = guildParam.Name,
