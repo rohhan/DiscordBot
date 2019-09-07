@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord.WebSocket;
 using DiscordBot.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace DiscordBot.Data
 {
@@ -14,35 +15,89 @@ namespace DiscordBot.Data
         public InitializeGuilds(DiscordBotDbContext context)
         {
             _context = context;
+            _context.Database.EnsureCreated();
         }
 
-        public async Task AddNewGuild(SocketGuild guildParam)
+        public async Task<bool> AddNewGuild(SocketGuild socketGuild)
         {
-            var alreadyExists = _context.Guilds.FirstOrDefault(g => g.GuildId == guildParam.Id);
+            var alreadyExists = _context.Guilds.Any(g => g.GuildDiscordId == socketGuild.Id);
 
-            if (alreadyExists != null)
+            if (alreadyExists)
             {
-                return;
+                return false;
             }
 
-            var guild = new Guild
-            {
-                DateCreated = guildParam.CreatedAt,
-                GuildId = guildParam.Id,
-                GuildName = guildParam.Name,
-                OwnerId = guildParam.OwnerId,
-                GuildUsers = new List<GuildUser>()
-            };
+            var guild = Map(socketGuild);
 
             await _context.Guilds.AddAsync(guild);
 
             await _context.SaveChangesAsync();
 
+            return true;
+
         }
 
-        public Task SaveGuildUsers(SocketGuild guild)
+        public async Task SaveGuildUsers(SocketGuild socketGuild)
         {
-            throw new NotImplementedException();
+            var socketGuildUsers = socketGuild.Users;
+
+            foreach (var socketGuildUser in socketGuildUsers)
+            {
+                // Save User
+                var userAlreadyExists = _context.Users.Any(u => u.UserDiscordId == socketGuildUser.Id);
+
+                var user = Map(socketGuildUser);
+
+                if (!userAlreadyExists)
+                {
+                    await _context.Users.AddAsync(user);
+
+                    await _context.SaveChangesAsync();
+                }
+
+                // Save Guild User Relationship
+                var relationshipAlreadyExists = _context.GuildUsers.Any(gu => gu.Guild.GuildDiscordId == socketGuild.Id && gu.User.UserDiscordId == socketGuildUser.Id);
+
+                var guild = await _context.Guilds.FirstOrDefaultAsync(g => g.GuildDiscordId == socketGuild.Id);
+
+                if (!relationshipAlreadyExists)
+                {
+                    var relationship = new GuildUser()
+                    {
+                        Guild = guild,
+                        User = user,
+                        DateJoined = socketGuildUser.JoinedAt
+                    };
+
+                    await _context.GuildUsers.AddAsync(relationship);
+
+                    await _context.SaveChangesAsync();
+                }
+            }
+        }
+
+        private Guild Map(SocketGuild guildParam)
+        {
+            var guild = new Guild
+            {
+                DateCreated = guildParam.CreatedAt,
+                GuildDiscordId = guildParam.Id,
+                GuildName = guildParam.Name,
+                OwnerId = guildParam.OwnerId,
+                GuildUsers = new List<GuildUser>()
+            };
+
+            return guild;
+        }
+
+        private User Map(SocketGuildUser socketGuildUser)
+        {
+            return new User()
+            {
+                UserDiscordId = socketGuildUser.Id,
+                DiscriminatorValue = socketGuildUser.DiscriminatorValue,
+                Username = socketGuildUser.Username
+            };
         }
     }
 }

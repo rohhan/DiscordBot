@@ -12,7 +12,7 @@ namespace DiscordBot.Models
         /// </summary>
         public DateTimeOffset DateCreated { get; set; }
 
-        public ulong GuildId { get; set; }
+        public ulong GuildDiscordId { get; set; }
 
         public string GuildName { get; set; }
 

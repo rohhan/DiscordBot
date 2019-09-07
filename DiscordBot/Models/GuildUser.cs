@@ -11,6 +11,6 @@ namespace DiscordBot.Models
 
         public Guild Guild { get; set; }
 
-        public DateTimeOffset DateJoined { get; set; }
+        public DateTimeOffset? DateJoined { get; set; }
     }
 }

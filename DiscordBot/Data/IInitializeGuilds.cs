@@ -6,7 +6,7 @@ namespace DiscordBot.Data
 {
     public interface IInitializeGuilds
     {
-        Task AddNewGuild(SocketGuild guild);
+        Task<bool> AddNewGuild(SocketGuild guild);
 
         Task SaveGuildUsers(SocketGuild guild);
     }
