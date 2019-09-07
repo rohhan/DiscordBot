@@ -8,6 +8,6 @@ namespace DiscordBot.Data
     {
         Task<bool> AddNewGuild(SocketGuild guild);
 
-        Task SaveGuildUsers(SocketGuild guild);
+        Task<int> UpdateGuildUsers(SocketGuild guild);
     }
 }
