@@ -97,7 +97,8 @@ namespace DiscordBot.Data
             {
                 UserDiscordId = socketGuildUser.Id,
                 DiscriminatorValue = socketGuildUser.DiscriminatorValue,
-                Username = socketGuildUser.Username
+                Username = socketGuildUser.Username,
+                IsBot = socketGuildUser.IsBot
             };
         }
     }

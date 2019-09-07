@@ -14,5 +14,7 @@ namespace DiscordBot.Models
         public ushort DiscriminatorValue { get; set; }
 
         public List<GuildUser>  GuildUsers { get; set; }
+
+        public bool IsBot { get; set; }
     }
 }
