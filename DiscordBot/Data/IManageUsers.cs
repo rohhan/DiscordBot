@@ -10,5 +10,9 @@ namespace DiscordBot.Data
     public interface IManageUsers
     {
         Task UpdateUserActivity(SocketCommandContext socketCommandContext, SocketUserMessage socketUserMessage);
+
+        Task<bool> AddNewUser(SocketGuildUser socketGuildUser);
+
+        Task RemoveUser(SocketGuildUser socketGuildUser);
     }
 }

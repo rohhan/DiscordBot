@@ -11,9 +11,9 @@ namespace DiscordBot.Models
 
         public Guild Guild { get; set; }
 
-        public DateTimeOffset? DateJoined { get; set; }
+        public DateTimeOffset? ActionDate { get; set; }
 
-        public DateTimeOffset? DateLeft { get; set; }
+        public GuildUserActionEnum ActionType { get; set; }
 
         public DateTimeOffset? DateLastActive { get; set; }
     }

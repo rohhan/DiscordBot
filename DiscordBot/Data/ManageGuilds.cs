@@ -8,14 +8,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DiscordBot.Data
 {
-    public class InitializeGuilds : IInitializeGuilds
+    public class ManageGuilds : IManageGuilds
     {
         private DiscordBotDbContext _context;
+        private IManageUsers _usersRepo;
 
-        public InitializeGuilds(DiscordBotDbContext context)
+        public ManageGuilds(DiscordBotDbContext context, IManageUsers usersRepo)
         {
             _context = context;
             _context.Database.EnsureCreated();
+            _usersRepo = usersRepo;
         }
 
         public async Task<bool> AddNewGuild(SocketGuild socketGuild)
@@ -45,38 +47,12 @@ namespace DiscordBot.Data
 
             foreach (var socketGuildUser in socketGuildUsers)
             {
-                // Save User
-                var userAlreadyExists = _context.Users.Any(u => u.UserDiscordId == socketGuildUser.Id);
+                bool userAdded = await _usersRepo.AddNewUser(socketGuildUser);
 
-                var user = Map(socketGuildUser);
-
-                if (!userAlreadyExists)
+                if (userAdded)
                 {
                     newUsers++;
-
-                    await _context.Users.AddAsync(user);
-
-                    await _context.SaveChangesAsync();
-                }
-
-                // Save Guild User Relationship
-                var relationshipAlreadyExists = _context.GuildUsers.Any(gu => gu.Guild.GuildDiscordId == socketGuild.Id && gu.User.UserDiscordId == socketGuildUser.Id);
-
-                var guild = await _context.Guilds.FirstOrDefaultAsync(g => g.GuildDiscordId == socketGuild.Id);
-
-                if (!relationshipAlreadyExists)
-                {
-                    var relationship = new GuildUser()
-                    {
-                        Guild = guild,
-                        User = user,
-                        DateJoined = socketGuildUser.JoinedAt
-                    };
-
-                    await _context.GuildUsers.AddAsync(relationship);
-
-                    await _context.SaveChangesAsync();
-                }
+                }      
             }
 
             return newUsers;
@@ -95,17 +71,6 @@ namespace DiscordBot.Data
             };
 
             return guild;
-        }
-
-        private User Map(SocketGuildUser socketGuildUser)
-        {
-            return new User()
-            {
-                UserDiscordId = socketGuildUser.Id,
-                DiscriminatorValue = socketGuildUser.DiscriminatorValue,
-                Username = socketGuildUser.Username,
-                IsBot = socketGuildUser.IsBot
-            };
         }
     }
 }

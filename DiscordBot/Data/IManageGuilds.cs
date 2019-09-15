@@ -4,7 +4,7 @@ using Discord.WebSocket;
 
 namespace DiscordBot.Data
 {
-    public interface IInitializeGuilds
+    public interface IManageGuilds
     {
         Task<bool> AddNewGuild(SocketGuild guild);
 
