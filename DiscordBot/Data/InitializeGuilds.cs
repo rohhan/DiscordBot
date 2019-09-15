@@ -37,9 +37,11 @@ namespace DiscordBot.Data
 
         }
 
-        public async Task SaveGuildUsers(SocketGuild socketGuild)
+        public async Task<int> UpdateGuildUsers(SocketGuild socketGuild)
         {
             var socketGuildUsers = socketGuild.Users;
+
+            var newUsers = 0;
 
             foreach (var socketGuildUser in socketGuildUsers)
             {
@@ -50,6 +52,8 @@ namespace DiscordBot.Data
 
                 if (!userAlreadyExists)
                 {
+                    newUsers++;
+
                     await _context.Users.AddAsync(user);
 
                     await _context.SaveChangesAsync();
@@ -74,6 +78,8 @@ namespace DiscordBot.Data
                     await _context.SaveChangesAsync();
                 }
             }
+
+            return newUsers;
         }
 
         private Guild Map(SocketGuild guildParam)

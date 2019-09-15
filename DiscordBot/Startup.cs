@@ -68,6 +68,7 @@ namespace DiscordBot
                .AddSingleton(Configuration);           // Add the configuration to the collection
 
             services.AddSingleton<IInitializeGuilds, InitializeGuilds>();
+            services.AddSingleton<IManageUsers, ManageUsers>();
         }
     }
 }

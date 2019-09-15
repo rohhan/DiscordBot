@@ -1,5 +1,6 @@
 ﻿using Discord.Commands;
 using Discord.WebSocket;
+using DiscordBot.Data;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -14,18 +15,21 @@ namespace DiscordBot.Services
         private readonly CommandService _commands;
         private readonly IConfigurationRoot _config;
         private readonly IServiceProvider _provider;
+        private readonly IManageUsers _userRepo;
 
         // DiscordSocketClient, CommandService, IConfigurationRoot, and IServiceProvider are injected automatically from the IServiceProvider
         public CommandHandler(
             DiscordSocketClient discord,
             CommandService commands,
             IConfigurationRoot config,
-            IServiceProvider provider)
+            IServiceProvider provider,
+            IManageUsers userRepo)
         {
             _discord = discord;
             _commands = commands;
             _config = config;
             _provider = provider;
+            _userRepo = userRepo;
 
             _discord.MessageReceived += OnMessageReceivedAsync;
         }
@@ -37,9 +41,11 @@ namespace DiscordBot.Services
             if (message == null) return;
 
             // Ignore self when checking commands
-            if (message.Author.Id == _discord.CurrentUser.Id) return;     
+            if (message.Author.Id == _discord.CurrentUser.Id) return;
 
             var context = new SocketCommandContext(_discord, message);     // Create the command context
+
+            await _userRepo.UpdateUserActivity(context, message);
 
             // Create a number to track where the prefix ends and the command begins
             int argPos = 0;

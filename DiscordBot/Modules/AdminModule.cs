@@ -23,9 +23,12 @@ namespace DiscordBot.Modules
 
             var successfullyAddedGuild = await _guildRepo.AddNewGuild(guild);
 
+            await ReplyAsync("Successfully initialized new guild!");
+
             if (successfullyAddedGuild)
             {
-                await _guildRepo.SaveGuildUsers(guild);
+                var numberOfNewUsers = await _guildRepo.UpdateGuildUsers(guild);
+                await ReplyAsync($"Successfully added {numberOfNewUsers} new users to the guild!");
             }
         }
 
@@ -34,7 +37,9 @@ namespace DiscordBot.Modules
         {
             var guild = Context.Guild;
 
-            await _guildRepo.SaveGuildUsers(guild);
+            var numberOfNewUsers = await _guildRepo.UpdateGuildUsers(guild);
+
+            await ReplyAsync($"Successfully added {numberOfNewUsers} new users to the guild!");
         }
     }
 }
