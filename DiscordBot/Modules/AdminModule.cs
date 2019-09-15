@@ -17,12 +17,24 @@ namespace DiscordBot.Modules
         }
 
         [Command("Init")]
-        public Task InitializeGuildAsync()
+        public async Task InitializeGuildAsync()
         {
             var guild = Context.Guild;
-            _guildRepo.AddNewGuild(guild);
-            //_guildRepo.SaveGuildUsers(guild);
-            return Task.FromResult(true);
+
+            var successfullyAddedGuild = await _guildRepo.AddNewGuild(guild);
+
+            if (successfullyAddedGuild)
+            {
+                await _guildRepo.SaveGuildUsers(guild);
+            }
+        }
+
+        [Command("Update users")]
+        public async Task UpdateUsersAsync()
+        {
+            var guild = Context.Guild;
+
+            await _guildRepo.SaveGuildUsers(guild);
         }
     }
 }

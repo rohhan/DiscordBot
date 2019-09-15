@@ -4,14 +4,16 @@ using DiscordBot.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace DiscordBot.Migrations
 {
     [DbContext(typeof(DiscordBotDbContext))]
-    partial class DiscordBotDbContextModelSnapshot : ModelSnapshot
+    [Migration("20190907171243_UpdatedModels")]
+    partial class UpdatedModels
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -25,11 +27,9 @@ namespace DiscordBot.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTimeOffset>("DateAdded");
-
                     b.Property<DateTimeOffset>("DateCreated");
 
-                    b.Property<decimal>("GuildDiscordId")
+                    b.Property<decimal>("GuildId")
                         .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
 
                     b.Property<string>("GuildName");
@@ -50,10 +50,6 @@ namespace DiscordBot.Migrations
 
                     b.Property<DateTimeOffset?>("DateJoined");
 
-                    b.Property<DateTimeOffset?>("DateLastActive");
-
-                    b.Property<DateTimeOffset?>("DateLeft");
-
                     b.HasKey("GuildId", "UserId");
 
                     b.HasIndex("UserId");
@@ -67,12 +63,10 @@ namespace DiscordBot.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("DiscriminatorValue");
-
-                    b.Property<bool>("IsBot");
-
-                    b.Property<decimal>("UserDiscordId")
+                    b.Property<decimal>("DiscordId")
                         .HasConversion(new ValueConverter<decimal, decimal>(v => default(decimal), v => default(decimal), new ConverterMappingHints(precision: 20, scale: 0)));
+
+                    b.Property<int>("DiscriminatorValue");
 
                     b.Property<string>("Username");
 
