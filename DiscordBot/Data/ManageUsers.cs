@@ -21,36 +21,22 @@ namespace DiscordBot.Data
 
         public async Task<bool> AddNewUser(SocketGuildUser socketGuildUser)
         {
-            // Check to see if user already exists
+            // Add user to db if it doesn't already exist
             var userAlreadyExists = _context.Users.Any(u => u.UserDiscordId == socketGuildUser.Id);
 
-            var user = Map(socketGuildUser);
-
-            // Add user to db if it doesn't exist
             if (userAlreadyExists)
             {
                 return false;
             }
+
+            var user = Map(socketGuildUser);
 
             await _context.Users.AddAsync(user);
 
             await _context.SaveChangesAsync();
 
             // Save Guild User Relationship
-            var guild = await _context.Guilds.FirstOrDefaultAsync(g => g.GuildDiscordId == socketGuildUser.Guild.Id);
-
-            if (guild == null)
-            {
-                throw new Exception();
-            }
-
-            var relationship = new GuildUser()
-            {
-                Guild = guild,
-                User = user,
-                ActionType = GuildUserActionEnum.Joined,
-                ActionDate = socketGuildUser.JoinedAt
-            };
+            var relationship = await CreateGuildUserRelationship(socketGuildUser, GuildUserActionEnum.Joined, socketGuildUser.JoinedAt);
 
             await _context.GuildUsers.AddAsync(relationship);
 
@@ -59,9 +45,23 @@ namespace DiscordBot.Data
             return true;
         }
 
-        public Task RemoveUser(SocketGuildUser socketGuildUser)
+        public async Task RemoveUserFromGuild(SocketGuildUser socketGuildUser)
         {
-            throw new NotImplementedException();
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserDiscordId == socketGuildUser.Id);
+
+            // Add retroactive history if necessary
+            if (user == null)
+            {
+                await AddNewUser(socketGuildUser);
+            }
+
+            // We add a new guild relationship to reflect that the user left
+            // We don't remove the user from the master list of users
+            var relationship = await CreateGuildUserRelationship(socketGuildUser, GuildUserActionEnum.Left, DateTimeOffset.Now);
+
+            await _context.GuildUsers.AddAsync(relationship);
+
+            await _context.SaveChangesAsync();
         }
 
         public async Task UpdateUserActivity(SocketCommandContext socketCommandContext, SocketUserMessage socketUserMessage)
@@ -88,6 +88,26 @@ namespace DiscordBot.Data
                 Username = socketGuildUser.Username,
                 IsBot = socketGuildUser.IsBot
             };
+        }
+
+        private async Task<GuildUser> CreateGuildUserRelationship(SocketGuildUser socketGuildUser, GuildUserActionEnum actionType, DateTimeOffset? actionTime)
+        {
+            var guild = await _context.Guilds.FirstOrDefaultAsync(g => g.GuildDiscordId == socketGuildUser.Guild.Id);
+
+            if (guild == null)
+            {
+                throw new Exception();
+            }
+
+            var relationship = new GuildUser()
+            {
+                Guild = guild,
+                User = Map(socketGuildUser),
+                ActionType = actionType,
+                ActionDate = actionTime
+            };
+
+            return relationship;
         }
     }
 }

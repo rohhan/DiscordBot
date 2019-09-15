@@ -13,6 +13,6 @@ namespace DiscordBot.Data
 
         Task<bool> AddNewUser(SocketGuildUser socketGuildUser);
 
-        Task RemoveUser(SocketGuildUser socketGuildUser);
+        Task RemoveUserFromGuild(SocketGuildUser socketGuildUser);
     }
 }

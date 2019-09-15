@@ -73,7 +73,7 @@ namespace DiscordBot.Services
 
         private async Task OnUserLeft(SocketGuildUser socketGuildUser)
         {
-
+            await _userRepo.RemoveUserFromGuild(socketGuildUser);    
         }
     }
 }
