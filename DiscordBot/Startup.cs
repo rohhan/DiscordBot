@@ -69,6 +69,7 @@ namespace DiscordBot
 
             services.AddSingleton<IInitializeGuilds, InitializeGuilds>();
             services.AddSingleton<IManageUsers, ManageUsers>();
+            services.AddSingleton<IWriteWaifus, WriteWaifus>();
         }
     }
 }
