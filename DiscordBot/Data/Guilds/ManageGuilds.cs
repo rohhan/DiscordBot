@@ -3,21 +3,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord.WebSocket;
+using DiscordBot.Data.Users;
 using DiscordBot.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace DiscordBot.Data
+namespace DiscordBot.Data.Guilds
 {
     public class ManageGuilds : IManageGuilds
     {
         private DiscordBotDbContext _context;
-        private IManageUsers _usersRepo;
+        private IAddUsers _addUsersRepo;
 
-        public ManageGuilds(DiscordBotDbContext context, IManageUsers usersRepo)
+        public ManageGuilds(DiscordBotDbContext context, IAddUsers addUsersRepo)
         {
             _context = context;
             _context.Database.EnsureCreated();
-            _usersRepo = usersRepo;
+            _addUsersRepo = addUsersRepo;
         }
 
         public async Task<bool> AddNewGuild(SocketGuild socketGuild)
@@ -47,7 +48,7 @@ namespace DiscordBot.Data
 
             foreach (var socketGuildUser in socketGuildUsers)
             {
-                bool userAdded = await _usersRepo.AddNewUser(socketGuildUser);
+                bool userAdded = await _addUsersRepo.AddNewUser(socketGuildUser);
 
                 if (userAdded)
                 {

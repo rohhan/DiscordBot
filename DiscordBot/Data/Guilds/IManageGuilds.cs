@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Discord.WebSocket;
 
-namespace DiscordBot.Data
+namespace DiscordBot.Data.Guilds
 {
     public interface IManageGuilds
     {
