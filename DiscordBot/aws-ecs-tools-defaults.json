@@ -14,7 +14,7 @@
     "task-cpu"                 : "256",
     "task-memory"              : "512",
     "task-definition-task-role" : "arn:aws:iam::520025102973:role/ecs_execution_DiscordBot",
-    "task-execution-role"       : "ecsTaskExecutionRole",
+    "task-execution-role"       : "ecs_execution_DiscordBot",
     "container-name"            : "DiscordBot",
     "container-port-mapping"    : "",
     "container-environment-variables" : "",
