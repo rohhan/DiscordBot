@@ -9,9 +9,9 @@ namespace DiscordBot.Modules
 {
     public class AdminModule : ModuleBase<SocketCommandContext>
     {
-        private IInitializeGuilds _guildRepo;
+        private IManageGuilds _guildRepo;
 
-        public AdminModule(IInitializeGuilds guildRepo)
+        public AdminModule(IManageGuilds guildRepo)
         {
             _guildRepo = guildRepo;
         }

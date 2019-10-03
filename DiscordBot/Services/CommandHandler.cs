@@ -32,6 +32,8 @@ namespace DiscordBot.Services
             _userRepo = userRepo;
 
             _discord.MessageReceived += OnMessageReceivedAsync;
+            _discord.UserJoined += OnUserJoined;
+            _discord.UserLeft += OnUserLeft;
         }
 
         private async Task OnMessageReceivedAsync(SocketMessage messageParam)
@@ -62,6 +64,16 @@ namespace DiscordBot.Services
                 if (!result.IsSuccess)     
                     await context.Channel.SendMessageAsync(result.ToString());
             }
+        }
+
+        private async Task OnUserJoined(SocketGuildUser socketGuildUser)
+        {
+            await _userRepo.AddNewUser(socketGuildUser);
+        }
+
+        private async Task OnUserLeft(SocketGuildUser socketGuildUser)
+        {
+            await _userRepo.RemoveUserFromGuild(socketGuildUser);    
         }
     }
 }

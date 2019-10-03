@@ -67,7 +67,7 @@ namespace DiscordBot
                .AddSingleton<Random>()                 // Add random to the collection
                .AddSingleton(Configuration);           // Add the configuration to the collection
 
-            services.AddSingleton<IInitializeGuilds, InitializeGuilds>();
+            services.AddSingleton<IManageGuilds, ManageGuilds>();
             services.AddSingleton<IManageUsers, ManageUsers>();
         }
     }
