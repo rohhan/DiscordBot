@@ -22,7 +22,11 @@ namespace DiscordBot.Data.Users
             GuildUserActionEnum actionType, 
             DateTimeOffset? actionTime)
         {
-            var guild = await _context.Guilds.FirstOrDefaultAsync(g => g.GuildDiscordId == socketGuildUser.Guild.Id);
+            var guild = await _context.Guilds
+                .FirstOrDefaultAsync(g => g.GuildDiscordId == socketGuildUser.Guild.Id);
+
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.UserDiscordId == socketGuildUser.Id);
 
             if (guild == null)
             {
@@ -32,7 +36,7 @@ namespace DiscordBot.Data.Users
             var relationship = new GuildUser()
             {
                 Guild = guild,
-                User = Map(socketGuildUser),
+                User = user,
                 ActionType = actionType,
                 ActionDate = actionTime
             };
@@ -46,7 +50,11 @@ namespace DiscordBot.Data.Users
             GuildUserActionEnum actionType, 
             DateTimeOffset? actionTime)
         {
-            var guild = await _context.Guilds.FirstOrDefaultAsync(g => g.GuildDiscordId == socketGuild.Id);
+            var guild = await _context.Guilds
+                .FirstOrDefaultAsync(g => g.GuildDiscordId == socketGuild.Id);
+
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.UserDiscordId == socketUser.Id);
 
             if (guild == null)
             {
@@ -57,34 +65,12 @@ namespace DiscordBot.Data.Users
             var relationship = new GuildUser()
             {
                 Guild = guild,
-                User = Map(socketUser),
+                User = user,
                 ActionType = actionType,
                 ActionDate = actionTime
             };
 
             return relationship;
-        }
-
-        private User Map(SocketGuildUser socketGuildUser)
-        {
-            return new User()
-            {
-                UserDiscordId = socketGuildUser.Id,
-                DiscriminatorValue = socketGuildUser.DiscriminatorValue,
-                Username = socketGuildUser.Username,
-                IsBot = socketGuildUser.IsBot
-            };
-        }
-
-        private User Map(SocketUser socketUser)
-        {
-            return new User()
-            {
-                UserDiscordId = socketUser.Id,
-                DiscriminatorValue = socketUser.DiscriminatorValue,
-                Username = socketUser.Username,
-                IsBot = socketUser.IsBot
-            };
         }
     }
 }

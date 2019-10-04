@@ -25,7 +25,9 @@ namespace DiscordBot.Data.Users
 
             var guild = socketCommandContext.Guild;
 
-            var userInGuild = _context.GuildUsers.FirstOrDefault(gu => gu.Guild.GuildDiscordId == guild.Id && gu.User.UserDiscordId == user.Id);
+            var userInGuild = _context.GuildUsers
+                .OrderByDescending(gu => gu.ActionDate)
+                .FirstOrDefault(gu => gu.Guild.GuildDiscordId == guild.Id && gu.User.UserDiscordId == user.Id);
 
             if (userInGuild == null) 
             { 

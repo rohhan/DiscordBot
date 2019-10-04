@@ -1,4 +1,5 @@
-﻿using Discord.Commands;
+﻿using Discord;
+using Discord.Commands;
 using Discord.WebSocket;
 using DiscordBot.Data.Users;
 using Microsoft.Extensions.Configuration;
@@ -40,10 +41,10 @@ namespace DiscordBot.Services
             _leaveUserRepo = leaveUserRepo;
             _logBansRepo = logBansRepo;
 
-            _discord.MessageReceived += OnMessageReceivedAsync;
             _discord.UserJoined += OnUserJoined;
             _discord.UserLeft += OnUserLeft;
             _discord.UserBanned += OnUserBanned;
+            _discord.MessageReceived += OnMessageReceivedAsync;
         }
 
         private async Task OnMessageReceivedAsync(SocketMessage messageParam)
@@ -52,8 +53,8 @@ namespace DiscordBot.Services
             var message = messageParam as SocketUserMessage;     
             if (message == null) return;
 
-            // Ignore self when checking commands
-            if (message.Author.Id == _discord.CurrentUser.Id) return;
+            // Ignore self and bots when checking commands
+            if (message.Author.Id == _discord.CurrentUser.Id || message.Source == MessageSource.Bot) return;
 
             var context = new SocketCommandContext(_discord, message);     // Create the command context
 
