@@ -13,34 +13,73 @@ namespace DiscordBot.Data.Users
     public class ManageUserActivity : IManageUserActivity
     {
         private DiscordBotDbContext _context;
+        private IAddUsers _addUsersRepo;
         private IManageGuildUserRelationships _relationshipRepo;
 
         public ManageUserActivity(DiscordBotDbContext context,
+            IAddUsers addUsersRepo,
             IManageGuildUserRelationships relationshipRepo)
         {
             _context = context;
+            _addUsersRepo = addUsersRepo;
             _relationshipRepo = relationshipRepo;
         }
 
         public async Task UpdateUserActivity(SocketCommandContext socketCommandContext, SocketUserMessage socketUserMessage)
         {
-            var socketUser = socketCommandContext.User;
+            var socketGuildUser = socketCommandContext.Guild.GetUser(socketCommandContext.User.Id);
+            
+            if (socketGuildUser == null)
+            {
+                throw new Exception();
+            }
 
-            var socketGuild = socketCommandContext.Guild;
-
-            var userInGuild = _context.GuildUsers
+            GuildUser userInGuild;
+            userInGuild = _context.GuildUsers
                 .OrderByDescending(gu => gu.ActionDate)
-                .FirstOrDefault(gu => gu.Guild.GuildDiscordId == socketGuild.Id && gu.User.UserDiscordId == socketUser.Id);
+                .FirstOrDefault(gu => gu.Guild.GuildDiscordId == socketGuildUser.Guild.Id && gu.User.UserDiscordId == socketGuildUser.Id);
 
             if (userInGuild == null) 
             {
-                // Todo: Add guild user relationship
-                // Todo: If latest guild user relationship isn't a "JOIN", add that too
+                await AddUserIfMissing(socketGuildUser);
+                await AddUserJoiningGuildRelationshipIfMissing(socketGuildUser);
+
+                userInGuild = _context.GuildUsers
+                    .OrderByDescending(gu => gu.ActionDate)
+                    .FirstOrDefault(gu => gu.Guild.GuildDiscordId == socketGuildUser.Guild.Id && gu.User.UserDiscordId == socketGuildUser.Id);
             }
 
             userInGuild.DateLastActive = DateTimeOffset.Now;
 
             await _context.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Adds retroactive user history if it is missing
+        /// </summary>
+        /// <param name="socketGuildUser"></param>
+        /// <returns></returns>
+        private async Task AddUserIfMissing(SocketGuildUser socketGuildUser)
+        {
+            var user = await _context.Users
+                    .FirstOrDefaultAsync(u => u.UserDiscordId == socketGuildUser.Id);
+
+            if (user == null)
+            {
+                await _addUsersRepo.AddNewUser(socketGuildUser);
+            }
+        }
+
+        private async Task AddUserJoiningGuildRelationshipIfMissing(SocketGuildUser socketGuildUser)
+        {
+            var mostRecentGuildUserRelationship = _context.GuildUsers
+                .OrderByDescending(gu => gu.ActionDate)
+                .FirstOrDefault(gu => gu.Guild.GuildDiscordId == socketGuildUser.Guild.Id && gu.User.UserDiscordId == socketGuildUser.Id);
+
+            if (mostRecentGuildUserRelationship == null || mostRecentGuildUserRelationship.ActionType != GuildUserActionEnum.Joined)
+            {
+                await _relationshipRepo.CreateGuildUserRelationship(socketGuildUser, GuildUserActionEnum.Joined, socketGuildUser.JoinedAt);
+            }
         }
     }
 }
