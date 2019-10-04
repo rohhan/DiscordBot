@@ -3,6 +3,7 @@ using DiscordBot.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -17,7 +18,7 @@ namespace DiscordBot.Data.Users
             _context = context;
         }
 
-        public async Task<GuildUser> CreateGuildUserRelationship(
+        public async Task<bool> CreateGuildUserRelationship(
             SocketGuildUser socketGuildUser, 
             GuildUserActionEnum actionType, 
             DateTimeOffset? actionTime)
@@ -30,7 +31,25 @@ namespace DiscordBot.Data.Users
 
             if (guild == null)
             {
+                // Todo: Create guild
                 throw new Exception();
+            }
+
+            if (user == null)
+            {
+                // Todo: Create user
+                throw new Exception();
+            }
+
+            var mostRecentGuildUserRelationship = _context.GuildUsers
+                .OrderByDescending(gu => gu.ActionDate)
+                .FirstOrDefault(gu => gu.Guild.GuildDiscordId == socketGuildUser.Guild.Id && gu.User.UserDiscordId == socketGuildUser.Id);
+
+            if (mostRecentGuildUserRelationship != null &&
+                mostRecentGuildUserRelationship.ActionType == actionType &&
+                mostRecentGuildUserRelationship.ActionDate == actionTime)
+            {
+                return false;
             }
 
             var relationship = new GuildUser()
@@ -41,10 +60,14 @@ namespace DiscordBot.Data.Users
                 ActionDate = actionTime
             };
 
-            return relationship;
+            await _context.GuildUsers.AddAsync(relationship);
+
+            await _context.SaveChangesAsync();
+
+            return true;
         }
 
-        public async Task<GuildUser> CreateGuildUserRelationship(
+        public async Task<bool> CreateGuildUserRelationship(
             SocketUser socketUser, 
             SocketGuild socketGuild, 
             GuildUserActionEnum actionType, 
@@ -62,6 +85,12 @@ namespace DiscordBot.Data.Users
                 throw new Exception();
             }
 
+            if (user == null)
+            {
+                // Todo: Create user
+                throw new Exception();
+            }
+
             var relationship = new GuildUser()
             {
                 Guild = guild,
@@ -70,7 +99,11 @@ namespace DiscordBot.Data.Users
                 ActionDate = actionTime
             };
 
-            return relationship;
+            await _context.GuildUsers.AddAsync(relationship);
+
+            await _context.SaveChangesAsync();
+
+            return true;
         }
     }
 }

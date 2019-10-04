@@ -20,6 +20,7 @@ namespace DiscordBot.Services
         private readonly IAddUsers _addUserRepo;
         private readonly ILogLeaves _leaveUserRepo;
         private readonly ILogBans _logBansRepo;
+        private readonly IManageGuildUserRelationships _relationshipRepo;
 
         // DiscordSocketClient, CommandService, IConfigurationRoot, and IServiceProvider are injected automatically from the IServiceProvider
         public CommandHandler(
@@ -30,7 +31,8 @@ namespace DiscordBot.Services
             IManageUserActivity managerUserRepo,
             IAddUsers addUserRepo,
             ILogLeaves leaveUserRepo,
-            ILogBans logBansRepo)
+            ILogBans logBansRepo,
+            IManageGuildUserRelationships relationshipRepo)
         {
             _discord = discord;
             _commands = commands;
@@ -40,6 +42,7 @@ namespace DiscordBot.Services
             _addUserRepo = addUserRepo;
             _leaveUserRepo = leaveUserRepo;
             _logBansRepo = logBansRepo;
+            _relationshipRepo = relationshipRepo;
 
             _discord.UserJoined += OnUserJoined;
             _discord.UserLeft += OnUserLeft;
@@ -80,6 +83,7 @@ namespace DiscordBot.Services
         private async Task OnUserJoined(SocketGuildUser socketGuildUser)
         {
             await _addUserRepo.AddNewUser(socketGuildUser);
+            await _relationshipRepo.CreateGuildUserRelationship(socketGuildUser, Models.GuildUserActionEnum.Joined, socketGuildUser.JoinedAt);
         }
 
         private async Task OnUserLeft(SocketGuildUser socketGuildUser)

@@ -73,6 +73,7 @@ namespace DiscordBot
             services.AddSingleton<IManageUserActivity, ManageUserActivity>();
             services.AddSingleton<IAddUsers, AddUsers>();
             services.AddSingleton<ILogLeaves, LogLeaves>();
+            services.AddSingleton<ILogBans, LogBans>();
             services.AddSingleton<IManageGuildUserRelationships, ManageGuildUserRelationships>();
         }
     }

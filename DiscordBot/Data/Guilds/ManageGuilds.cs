@@ -13,12 +13,16 @@ namespace DiscordBot.Data.Guilds
     {
         private DiscordBotDbContext _context;
         private IAddUsers _addUsersRepo;
+        private IManageGuildUserRelationships _relationshipRepo;
 
-        public ManageGuilds(DiscordBotDbContext context, IAddUsers addUsersRepo)
+        public ManageGuilds(DiscordBotDbContext context, 
+            IAddUsers addUsersRepo,
+            IManageGuildUserRelationships relationshipRepo)
         {
             _context = context;
             _context.Database.EnsureCreated();
             _addUsersRepo = addUsersRepo;
+            _relationshipRepo = relationshipRepo;
         }
 
         public async Task<bool> AddNewGuild(SocketGuild socketGuild)
@@ -49,8 +53,9 @@ namespace DiscordBot.Data.Guilds
             foreach (var socketGuildUser in socketGuildUsers)
             {
                 bool userAdded = await _addUsersRepo.AddNewUser(socketGuildUser);
+                bool guildUserRelationShipAdded = await _relationshipRepo.CreateGuildUserRelationship(socketGuildUser, GuildUserActionEnum.Joined, socketGuildUser.JoinedAt);
 
-                if (userAdded)
+                if (userAdded && guildUserRelationShipAdded)
                 {
                     newUsers++;
                 }      
