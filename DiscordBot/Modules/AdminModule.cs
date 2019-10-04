@@ -1,5 +1,5 @@
 ﻿using Discord.Commands;
-using DiscordBot.Data;
+using DiscordBot.Data.Guilds;
 using System;
 using System.Collections.Generic;
 using System.Text;

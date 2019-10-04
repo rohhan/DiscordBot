@@ -5,14 +5,10 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DiscordBot.Data
+namespace DiscordBot.Data.Users
 {
-    public interface IManageUsers
+    public interface IManageUserActivity
     {
         Task UpdateUserActivity(SocketCommandContext socketCommandContext, SocketUserMessage socketUserMessage);
-
-        Task<bool> AddNewUser(SocketGuildUser socketGuildUser);
-
-        Task RemoveUserFromGuild(SocketGuildUser socketGuildUser);
     }
 }

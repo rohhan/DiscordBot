@@ -1,6 +1,6 @@
 ﻿using Discord.Commands;
 using Discord.WebSocket;
-using DiscordBot.Data;
+using DiscordBot.Data.Users;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -15,7 +15,10 @@ namespace DiscordBot.Services
         private readonly CommandService _commands;
         private readonly IConfigurationRoot _config;
         private readonly IServiceProvider _provider;
-        private readonly IManageUsers _userRepo;
+        private readonly IManageUserActivity _manageUserRepo;
+        private readonly IAddUsers _addUserRepo;
+        private readonly ILogLeaves _leaveUserRepo;
+        private readonly ILogBans _logBansRepo;
 
         // DiscordSocketClient, CommandService, IConfigurationRoot, and IServiceProvider are injected automatically from the IServiceProvider
         public CommandHandler(
@@ -23,17 +26,24 @@ namespace DiscordBot.Services
             CommandService commands,
             IConfigurationRoot config,
             IServiceProvider provider,
-            IManageUsers userRepo)
+            IManageUserActivity managerUserRepo,
+            IAddUsers addUserRepo,
+            ILogLeaves leaveUserRepo,
+            ILogBans logBansRepo)
         {
             _discord = discord;
             _commands = commands;
             _config = config;
             _provider = provider;
-            _userRepo = userRepo;
+            _manageUserRepo = managerUserRepo;
+            _addUserRepo = addUserRepo;
+            _leaveUserRepo = leaveUserRepo;
+            _logBansRepo = logBansRepo;
 
             _discord.MessageReceived += OnMessageReceivedAsync;
             _discord.UserJoined += OnUserJoined;
             _discord.UserLeft += OnUserLeft;
+            _discord.UserBanned += OnUserBanned;
         }
 
         private async Task OnMessageReceivedAsync(SocketMessage messageParam)
@@ -47,7 +57,7 @@ namespace DiscordBot.Services
 
             var context = new SocketCommandContext(_discord, message);     // Create the command context
 
-            await _userRepo.UpdateUserActivity(context, message);
+            await _manageUserRepo.UpdateUserActivity(context, message);
 
             // Create a number to track where the prefix ends and the command begins
             int argPos = 0;
@@ -68,12 +78,17 @@ namespace DiscordBot.Services
 
         private async Task OnUserJoined(SocketGuildUser socketGuildUser)
         {
-            await _userRepo.AddNewUser(socketGuildUser);
+            await _addUserRepo.AddNewUser(socketGuildUser);
         }
 
         private async Task OnUserLeft(SocketGuildUser socketGuildUser)
         {
-            await _userRepo.RemoveUserFromGuild(socketGuildUser);    
+            await _leaveUserRepo.LogUserLeftGuild(socketGuildUser);    
+        }
+
+        private async Task OnUserBanned(SocketUser socketUser, SocketGuild socketGuild)
+        {
+            await _logBansRepo.LogUserBannedFromGuild(socketUser, socketGuild);
         }
     }
 }

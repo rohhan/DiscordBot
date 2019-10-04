@@ -2,6 +2,8 @@
 using Discord.Commands;
 using Discord.WebSocket;
 using DiscordBot.Data;
+using DiscordBot.Data.Guilds;
+using DiscordBot.Data.Users;
 using DiscordBot.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -68,7 +70,10 @@ namespace DiscordBot
                .AddSingleton(Configuration);           // Add the configuration to the collection
 
             services.AddSingleton<IManageGuilds, ManageGuilds>();
-            services.AddSingleton<IManageUsers, ManageUsers>();
+            services.AddSingleton<IManageUserActivity, ManageUserActivity>();
+            services.AddSingleton<IAddUsers, AddUsers>();
+            services.AddSingleton<ILogLeaves, LogLeaves>();
+            services.AddSingleton<IManageGuildUserRelationships, ManageGuildUserRelationships>();
         }
     }
 }
