@@ -18,6 +18,7 @@ namespace DiscordBot.Services
         private readonly IManageUserActivity _manageUserRepo;
         private readonly IAddUsers _addUserRepo;
         private readonly ILogLeaves _leaveUserRepo;
+        private readonly ILogBans _logBansRepo;
 
         // DiscordSocketClient, CommandService, IConfigurationRoot, and IServiceProvider are injected automatically from the IServiceProvider
         public CommandHandler(
@@ -27,7 +28,8 @@ namespace DiscordBot.Services
             IServiceProvider provider,
             IManageUserActivity managerUserRepo,
             IAddUsers addUserRepo,
-            ILogLeaves leaveUserRepo)
+            ILogLeaves leaveUserRepo,
+            ILogBans logBansRepo)
         {
             _discord = discord;
             _commands = commands;
@@ -36,10 +38,12 @@ namespace DiscordBot.Services
             _manageUserRepo = managerUserRepo;
             _addUserRepo = addUserRepo;
             _leaveUserRepo = leaveUserRepo;
+            _logBansRepo = logBansRepo;
 
             _discord.MessageReceived += OnMessageReceivedAsync;
             _discord.UserJoined += OnUserJoined;
             _discord.UserLeft += OnUserLeft;
+            _discord.UserBanned += OnUserBanned;
         }
 
         private async Task OnMessageReceivedAsync(SocketMessage messageParam)
@@ -80,6 +84,11 @@ namespace DiscordBot.Services
         private async Task OnUserLeft(SocketGuildUser socketGuildUser)
         {
             await _leaveUserRepo.LogUserLeftGuild(socketGuildUser);    
+        }
+
+        private async Task OnUserBanned(SocketUser socketUser, SocketGuild socketGuild)
+        {
+            await _logBansRepo.LogUserBannedFromGuild(socketUser, socketGuild);
         }
     }
 }

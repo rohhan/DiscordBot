@@ -10,5 +10,7 @@ namespace DiscordBot.Data.Users
     public interface IManageGuildUserRelationships
     {
         Task<GuildUser> CreateGuildUserRelationship(SocketGuildUser socketGuildUser, GuildUserActionEnum actionType, DateTimeOffset? actionTime);
+
+        Task<GuildUser> CreateGuildUserRelationship(SocketUser socketUser, SocketGuild socketGuild, GuildUserActionEnum actionType, DateTimeOffset? actionTime);
     }
 }

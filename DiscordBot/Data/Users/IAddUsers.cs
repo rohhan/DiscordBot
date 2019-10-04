@@ -9,5 +9,7 @@ namespace DiscordBot.Data.Users
     public interface IAddUsers
     {
         Task<bool> AddNewUser(SocketGuildUser socketGuildUser);
+
+        Task<bool> AddNewUser(SocketUser socketUser, SocketGuild socketGuild);
     }
 }

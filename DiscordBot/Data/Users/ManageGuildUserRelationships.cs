@@ -17,7 +17,10 @@ namespace DiscordBot.Data.Users
             _context = context;
         }
 
-        public async Task<GuildUser> CreateGuildUserRelationship(SocketGuildUser socketGuildUser, GuildUserActionEnum actionType, DateTimeOffset? actionTime)
+        public async Task<GuildUser> CreateGuildUserRelationship(
+            SocketGuildUser socketGuildUser, 
+            GuildUserActionEnum actionType, 
+            DateTimeOffset? actionTime)
         {
             var guild = await _context.Guilds.FirstOrDefaultAsync(g => g.GuildDiscordId == socketGuildUser.Guild.Id);
 
@@ -37,6 +40,31 @@ namespace DiscordBot.Data.Users
             return relationship;
         }
 
+        public async Task<GuildUser> CreateGuildUserRelationship(
+            SocketUser socketUser, 
+            SocketGuild socketGuild, 
+            GuildUserActionEnum actionType, 
+            DateTimeOffset? actionTime)
+        {
+            var guild = await _context.Guilds.FirstOrDefaultAsync(g => g.GuildDiscordId == socketGuild.Id);
+
+            if (guild == null)
+            {
+                // Todo: Create guild
+                throw new Exception();
+            }
+
+            var relationship = new GuildUser()
+            {
+                Guild = guild,
+                User = Map(socketUser),
+                ActionType = actionType,
+                ActionDate = actionTime
+            };
+
+            return relationship;
+        }
+
         private User Map(SocketGuildUser socketGuildUser)
         {
             return new User()
@@ -45,6 +73,17 @@ namespace DiscordBot.Data.Users
                 DiscriminatorValue = socketGuildUser.DiscriminatorValue,
                 Username = socketGuildUser.Username,
                 IsBot = socketGuildUser.IsBot
+            };
+        }
+
+        private User Map(SocketUser socketUser)
+        {
+            return new User()
+            {
+                UserDiscordId = socketUser.Id,
+                DiscriminatorValue = socketUser.DiscriminatorValue,
+                Username = socketUser.Username,
+                IsBot = socketUser.IsBot
             };
         }
     }
